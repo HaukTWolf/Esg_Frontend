@@ -38,27 +38,47 @@ function PracticeCard({ entries, isLoading }: PracticeCardProps) {
     }
   }, [practiceWords, currentWord, started]);
 
+  function startPractice(): void {
+    setStarted(true);
+    setCurrentWord(pickRandomWord(practiceWords));
+    setAnswer('');
+    setResult(null);
+  }
 
-    function startPractice(): void {
- }
-
- function checkAnswer(event: FormEvent<HTMLFormElement>): void {
+  function checkAnswer(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
 
+    if (!currentWord || !answer.trim()) {
+      return;
+    }
+
+    const answerIsCorrect = isCorrectAnswer(answer, currentWord.translation);
+    setResult(answerIsCorrect ? 'correct' : 'incorrect');
+
+    if (answerIsCorrect) {
+      setCorrectCount((value) => value + 1);
+    } else {
+      setWrongCount((value) => value + 1);
+    }
   }
 
-
-    function nextWord(): void {
-
+  function nextWord(): void {
+    setCurrentWord(pickRandomWord(practiceWords, currentWord?.key));
+    setAnswer('');
+    setResult(null);
   }
 
-    function resetPractice(): void {
-
+  function resetPractice(): void {
+    setStarted(false);
+    setCurrentWord(null);
+    setAnswer('');
+    setResult(null);
+    setCorrectCount(0);
+    setWrongCount(0);
   }
 
-   return (
+  return (
     <section className="card">
-      
       <div className="card-header-split practice-card-heading">
         <div>
           <p className="section-label">Schritt 2</p>
@@ -67,6 +87,7 @@ function PracticeCard({ entries, isLoading }: PracticeCardProps) {
             Du siehst ein Wort und schreibst die passende Uebersetzung in das Feld.
           </p>
         </div>
+
         {started && <p className="practice-card-stats">Richtig: {correctCount} | Falsch: {wrongCount}</p>}
       </div>
 
@@ -91,7 +112,6 @@ function PracticeCard({ entries, isLoading }: PracticeCardProps) {
           )}
           {practiceWords.length > 0 && <Button onClick={startPractice}>Training starten</Button>}
         </div>
-
       ) : (
         <div className="practice-card-body">
           <div className="card-panel practice-card-word-panel">
